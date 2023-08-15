@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum Token {
     Text(String),
     Asterisk,
@@ -18,8 +18,7 @@ impl TokenizedString {
         }
     }
 
-    fn peek(&self, offset: Option<u32>) -> Token {
-        let offset = offset.unwrap_or(0) as usize;
+    fn peek(&self, offset: usize) -> Token {
         self.tokens[offset].clone()
     }
 
@@ -82,29 +81,72 @@ fn tokenize(source: String) -> Vec<Token> {
 }
 
 enum AST {
-    Root(Vec<AST>),
+    Body(Vec<AST>),
     Bold(Vec<AST>),
     Italics(Vec<AST>),
     Text(String),
 }
 
-fn parse(tokens: Vec<Token>) {}
+fn parse(ts: &mut TokenizedString) {
+    let children = Vec::new();
+
+    let next = ts.pop();
+    print!("next: {:?}", next);
+
+    return match next {
+        Token::EOF => {
+            AST::Body(children);
+        }
+        Token::Asterisk => {
+            // bold
+            if ts.peek(0) == Token::Asterisk {
+                // recursively parse bold text
+            }
+        }
+        _ => {}
+    };
+}
+
+fn parseBold(ts: &mut TokenizedString) {
+    let children = Vec::new();
+
+    let next = ts.pop();
+    print!("next: {:?}", next);
+
+    return match next {
+        Token::EOF => {
+            AST::Body(children);
+        }
+        Token::Asterisk => {
+            // bold
+            if ts.peek(0) == Token::Asterisk {
+                // recursively parse bold text
+            }
+        }
+        _ => {}
+    };
+}
 
 fn main() {
-    let source = String::from("This is some **bold** and _italics_ and ***bold italics*** text.");
+    // let source = String::from("This is some **bold** and _italics_ and ***bold italics*** text.");
 
-    let tokenized_struct = TokenizedString::new(source);
-    println!("{:?}", tokenized_struct.tokens);
+    // let tokenized_struct = TokenizedString::new(source);
+    // println!("{:?}", tokenized_struct.tokens);
+
+    let src = String::from("a **b**");
+    let mut ts = TokenizedString::new(src);
+    let res = parse(&mut ts);
+    println!("{:?}", res);
 }
 
 #[cfg(test)]
 #[test]
 fn basic_ast() {
     let source = String::from("Hello **World**");
-    let tokens = TokenizedString::new(source);
-    let ast = parse(tokens.tokens);
+    let mut tokens = TokenizedString::new(source);
+    let ast = parse(&mut tokens);
 
-    let expected_ast = AST::Root(vec![
+    let expected_ast = AST::Body(vec![
         AST::Text(String::from("Hello ")),
         AST::Bold(vec![AST::Text(String::from("World"))]),
     ]);
