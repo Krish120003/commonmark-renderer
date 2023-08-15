@@ -1,6 +1,4 @@
-use std::ops::Add;
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Token {
     Text(String),
     Asterisk,
@@ -9,16 +7,23 @@ enum Token {
 
 #[derive(Debug)]
 struct TokenizedString {
-    source: String,
     pub tokens: Vec<Token>,
 }
 
 impl TokenizedString {
     fn new(source: String) -> TokenizedString {
         TokenizedString {
-            source: source.clone(),
             tokens: tokenize(source),
         }
+    }
+
+    fn peek(&self, offset: Option<u32>) -> Token {
+        let offset = offset.unwrap_or(0) as usize;
+        self.tokens[offset].clone()
+    }
+
+    fn pop(&mut self) -> Token {
+        self.tokens.remove(0)
     }
 }
 
