@@ -3,6 +3,7 @@ enum Token {
     Text(String),
     Asterisk,
     Underscore,
+    EOF,
 }
 
 #[derive(Debug)]
@@ -75,12 +76,38 @@ fn tokenize(source: String) -> Vec<Token> {
         tokens.push(Token::Text(window.clone()));
     }
 
+    tokens.push(Token::EOF);
+
     tokens
 }
+
+enum AST {
+    Root(Vec<AST>),
+    Bold(Vec<AST>),
+    Italics(Vec<AST>),
+    Text(String),
+}
+
+fn parse(tokens: Vec<Token>) {}
 
 fn main() {
     let source = String::from("This is some **bold** and _italics_ and ***bold italics*** text.");
 
     let tokenized_struct = TokenizedString::new(source);
     println!("{:?}", tokenized_struct.tokens);
+}
+
+#[cfg(test)]
+#[test]
+fn basic_ast() {
+    let source = String::from("Hello **World**");
+    let tokens = TokenizedString::new(source);
+    let ast = parse(tokens.tokens);
+
+    let expected_ast = AST::Root(vec![
+        AST::Text(String::from("Hello ")),
+        AST::Bold(vec![AST::Text(String::from("World"))]),
+    ]);
+
+    assert_eq!(1, 1)
 }
