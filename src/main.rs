@@ -90,8 +90,6 @@ enum ASTNode {
 fn parse(ts: &mut TokenizedString) -> ASTNode {
     let mut children: Vec<ASTNode> = Vec::new();
 
-    println!("Source {:?}", ts);
-
     loop {
         let next = ts.pop();
 
@@ -136,8 +134,6 @@ fn parse(ts: &mut TokenizedString) -> ASTNode {
                     // we must have found the end of the bold text
                     // lets parse the bold text
 
-                    println!("Offset {:?}", offset);
-
                     let mut t = vec![];
                     for _ in 0..offset {
                         t.push(ts.pop())
@@ -165,8 +161,6 @@ fn parse(ts: &mut TokenizedString) -> ASTNode {
 }
 
 fn parse_bold(ts: &mut TokenizedString) -> ASTNode {
-    println!("parse_bold called; ts: {:?}", ts);
-
     let ASTNode::Node(children) = parse(ts) else {panic!()};
     return ASTNode::Bold(children);
 }
