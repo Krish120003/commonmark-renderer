@@ -29,7 +29,6 @@ impl TokenizedString {
 
 fn tokenize(source: String) -> Vec<Token> {
     // print the source
-    println!("source: {:?}", source);
 
     // create a vector to hold the tokens
 
@@ -91,10 +90,10 @@ enum ASTNode {
 fn parse(ts: &mut TokenizedString) -> ASTNode {
     let mut children: Vec<ASTNode> = Vec::new();
 
+    println!("Source {:?}", ts);
+
     loop {
         let next = ts.pop();
-        println!("==================");
-        println!("next: {:?}", next);
 
         if next == Token::EOF {
             break;
@@ -104,32 +103,43 @@ fn parse(ts: &mut TokenizedString) -> ASTNode {
             Token::Asterisk => {
                 // bold
                 if ts.peek(0) == Token::Asterisk {
-                    println!("FOUND START OF BOLD");
                     // consume the second asterisk
                     ts.pop();
 
                     // now lets find if/where this bold ends, by finding the next double asterisk
-                    let mut offset = 1;
-                    while ts.peek(offset) != Token::Asterisk
-                        && ts.peek(offset + 1) != Token::Asterisk
-                        && ts.peek(offset) != Token::EOF
-                        && ts.peek(offset + 1) != Token::EOF
-                    {
+                    // however make sure next isnt EOF
+
+                    if ts.peek(0) == Token::EOF {
+                        // we have found the end of the string, but not the end of the bold
+                        // so we should add the asterisk to the text
+                        children.push(ASTNode::Text(String::from("**")));
+                        break;
+                    }
+
+                    let mut offset = 0;
+                    // keep offsetting
+                    loop {
+                        if ts.peek(offset) == Token::EOF {
+                            todo!("unmatched asterisk");
+                        }
+
+                        // we found the closing asterisk
+                        if ts.peek(offset) == Token::Asterisk
+                            && ts.peek(offset + 1) == Token::Asterisk
+                        {
+                            break;
+                        }
+
                         offset += 1;
                     }
-
-                    // check if EOF
-                    if ts.peek(offset) == Token::EOF || ts.peek(offset + 1) == Token::EOF {
-                        todo!("unmatched asterisk");
-                    }
-
-                    println!("TOKENS RN {:?}", ts);
 
                     // we must have found the end of the bold text
                     // lets parse the bold text
 
+                    println!("Offset {:?}", offset);
+
                     let mut t = vec![];
-                    for i in 0..offset {
+                    for _ in 0..offset {
                         t.push(ts.pop())
                     }
 
@@ -137,9 +147,6 @@ fn parse(ts: &mut TokenizedString) -> ASTNode {
 
                     let mut bold_text = TokenizedString::new(String::from(""));
                     bold_text.tokens = t;
-
-                    println!("bold_text: {:?}", bold_text.tokens);
-                    println!("TOKENS RN {:?}", ts);
 
                     // remove the closing
                     ts.pop();
@@ -158,23 +165,18 @@ fn parse(ts: &mut TokenizedString) -> ASTNode {
 }
 
 fn parse_bold(ts: &mut TokenizedString) -> ASTNode {
-    return ASTNode::Bold(vec![parse(ts)]);
+    println!("parse_bold called; ts: {:?}", ts);
+
+    let ASTNode::Node(children) = parse(ts) else {panic!()};
+    return ASTNode::Bold(children);
 }
 
 fn main() {
-    let source = String::from("Hello **World**");
+    let source = String::from("Hello **Wor**ld**");
     let mut tokens = TokenizedString::new(source);
     let ast = parse(&mut tokens);
 
-    let expected_ast = ASTNode::Node(vec![
-        ASTNode::Text(String::from("Hello ")),
-        ASTNode::Bold(vec![ASTNode::Text(String::from("World"))]),
-    ]);
-
     println!("AST: {:?}", ast);
-    println!("EXPECTED AST: {:?}", expected_ast);
-
-    assert_eq!(1, 1)
 }
 
 // ==============================================
@@ -196,5 +198,5 @@ fn basic_ast() {
     println!("AST: {:?}", ast);
     println!("EXPECTED AST: {:?}", expected_ast);
 
-    assert_eq!(1, 1)
+    assert_eq!(ast, expected_ast);
 }
